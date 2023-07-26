@@ -40,6 +40,8 @@ services:
     image: mongo:latest
     ports:
       - "27017:27017"
+    networks:
+      - app-network
   redis:
     container_name: seo_suite_redis
     image: redis:latest
