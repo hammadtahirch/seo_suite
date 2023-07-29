@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Models\Store;
+use App\Models\Shop;
 use App\Services\ShopifyService;
-use App\Traits\FunctionTrait;
+use App\Services\ShopService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,19 +16,20 @@ class DeleteWebhooks implements ShouldQueue
 {
 
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    use FunctionTrait;
 
-    private $store_id;
+    private $shop;
     private $shopifyService;
+    private $shopService;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($store_id)
+    public function __construct($shop)
     {
-        $this->store_id = $store_id;
+        $this->shop = $shop;
         $this->shopifyService = app(ShopifyService::class);
+        $this->shopService = app(ShopService::class);
     }
 
     /**
@@ -38,14 +39,14 @@ class DeleteWebhooks implements ShouldQueue
      */
     public function handle()
     {
-        $store = Store::where('table_id', $this->store_id)->first();
-        $endpoint = getShopifyURLForStore('webhooks.json', $store);
-        $headers = getShopifyHeadersForStore($store);
+        $shop = $this->shopService->getShopByDomain($this->shop);
+        $endpoint = getShopifyURLForShop('webhooks.json', $shop);
+        $headers = getShopifyHeadersForShop($shop);
         $response = $this->shopifyService->makeAnAPICallToShopify('GET', $endpoint, null, $headers);
         $webhooks = $response['body']['webhooks'];
         foreach ($webhooks as $webhook) {
-            $endpoint = getShopifyURLForStore('webhooks/' . $webhook['id'] . '.json', $store);
-            $headers = getShopifyHeadersForStore($store);
+            $endpoint = getShopifyURLForShop('webhooks/' . $webhook['id'] . '.json', $shop);
+            $headers = getShopifyHeadersForShop($shop);
             $response = $this->shopifyService->makeAnAPICallToShopify('DELETE', $endpoint, null, $headers);
             Log::info('Response for deleting webhooks');
             Log::info($response);

@@ -18,11 +18,11 @@ return [
         'write_merchant_managed_fulfillment_orders'
     ],
     'webhook_events' => [
-        'orders/create' => 'order/created', //When the store receives an order
+        'orders/create' => 'order/created', //When the shop receives an order
         'orders/updated' => 'order/updated', //When an order is updated
         'products/create' => 'product/created', //When products are created
         'app/uninstalled' => 'app/uninstall', //To know when the app has been removed. 
-        'shop/update' => 'shop/updated', //To keep latest data in the stores table
+        'shop/update' => 'shop/updated', //To keep latest data in the shops table
     ],
     'default_permissions' => [
         'write-products', 'read-products',

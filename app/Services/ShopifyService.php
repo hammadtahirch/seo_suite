@@ -106,8 +106,8 @@ class ShopifyService
     public function getShopDetailsFromShopify($shop, $accessToken)
     {
         try {
-            $endpoint = getShopifyURLForStore('shop.json', ['myshopify_domain' => $shop]);
-            $headers = getShopifyHeadersForStore(['access_token' => $accessToken]);
+            $endpoint = getShopifyURLForShop('shop.json', ['myshopify_domain' => $shop]);
+            $headers = getShopifyHeadersForShop(['access_token' => $accessToken]);
             $response = $this->makeAnAPICallToShopify('GET', $endpoint, null, $headers);
             if ($response['statusCode'] == 200) {
                 $body = $response['body'];
@@ -128,7 +128,7 @@ class ShopifyService
     /**
      * 
      */
-    public function requestAccessTokenFromShopifyForThisStore($shop, $code)
+    public function requestAccessTokenFromShopifyForThisShop($shop, $code)
     {
         try {
             $endpoint = 'https://' . $shop . '/admin/oauth/access_token';
@@ -156,13 +156,13 @@ class ShopifyService
      * If it succeeds with 200 status then that means its valid and we can return true;        
      */
 
-    public function checkIfAccessTokenIsValid($storeDetails)
+    public function checkIfAccessTokenIsValid($shopDetails)
     {
         try {
-            if ($storeDetails !== null && isset($storeDetails->access_token) && strlen($storeDetails->access_token) > 0) {
-                $token = $storeDetails->access_token;
-                $endpoint = getShopifyURLForStore('shop.json', $storeDetails);
-                $headers = getShopifyHeadersForStore($storeDetails);
+            if ($shopDetails !== null && isset($shopDetails->access_token) && strlen($shopDetails->access_token) > 0) {
+                $token = $shopDetails->access_token;
+                $endpoint = getShopifyURLForShop('shop.json', $shopDetails);
+                $headers = getShopifyHeadersForShop($shopDetails);
                 $response = $this->makeAnAPICallToShopify('GET', $endpoint, null, $headers, null);
                 return $response['statusCode'] === 200;
             }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Shopify;
 use App\Http\Controllers\Controller;
 use App\Jobs\ConfigureWebhooks;
 use App\Services\ShopifyService;
-use App\Services\StoreService;
+use App\Services\ShopService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,15 +22,15 @@ class AppController extends Controller
     /**
      * 
      */
-    private $storeService;
+    private $shopService;
 
     /**
      * 
      */
-    public function __construct(ShopifyService $shopifyService, StoreService $storeService)
+    public function __construct(ShopifyService $shopifyService, ShopService $shopService)
     {
         $this->shopifyService = $shopifyService;
-        $this->storeService = $storeService;
+        $this->shopService = $shopService;
     }
 
     /**
@@ -43,18 +43,20 @@ class AppController extends Controller
     public function startInstallation(Request $request)
     {
         try {
+
             $validRequest = $this->shopifyService->validateRequestFromShopify($request->all());
             if ($validRequest) {
                 $shop = $request->has('shop'); //Check if shop parameter exists on the request.
 
                 if ($shop) {
-                    $storeDetails = $this->storeService->getStoreByDomain($request->shop);
-                    if ($storeDetails !== null && $storeDetails !== false) {
-                        //store record exists and now determine whether the access token is valid or not
+                    $shopDetails = $this->shopService->getShopByDomain($request->shop);
+                    if ($shopDetails !== null && $shopDetails !== false) {
+                        //shop record exists and now determine whether the access token is valid or not
                         //if not then forward them to the re-installation flow
                         //if yes then redirect them to the login page.
 
-                        $validAccessToken = $this->shopifyService->checkIfAccessTokenIsValid($storeDetails);
+                        $validAccessToken = $this->shopifyService->checkIfAccessTokenIsValid($shopDetails);
+
                         if ($validAccessToken) {
                             //Token is valid for Shopify API calls so redirect them to the login page.
 
@@ -63,7 +65,7 @@ class AppController extends Controller
                              */
                             $is_embedded = determineIfAppIsEmbedded();
                             if ($is_embedded) {
-                                return redirect()->route('dashboard');
+                                return Redirect::to('https://' . $request->shop . '/admin/apps/seo_suite/dashboard');
                             }
                         } else {
                             return Redirect::to($this->shopifyService->buildShopifyAuthorizeEndpoint($request->shop));
@@ -90,20 +92,21 @@ class AppController extends Controller
                 if ($request->has('shop') && $request->has('code')) {
                     $shop = $request->shop;
                     $code = $request->code;
-                    $accessToken = $this->shopifyService->requestAccessTokenFromShopifyForThisStore($shop, $code);
+                    $accessToken = $this->shopifyService->requestAccessTokenFromShopifyForThisShop($shop, $code);
                     if ($accessToken !== false && $accessToken !== null) {
                         $shopDetails = $this->shopifyService->getShopDetailsFromShopify($shop, $accessToken);
-                        $storeDetails = $this->storeService->saveStoreDetailsToDatabase($shopDetails, $accessToken);
-                        if ($storeDetails) {
+                        $shopDetails = $this->shopService->saveShopDetailsToDatabase($shopDetails, $accessToken);
+                        if ($shopDetails) {
+                            ConfigureWebhooks::dispatch($shop);
                             //At this point the installation process is complete.
                             $is_embedded = determineIfAppIsEmbedded();
                             if ($is_embedded) {
                                 // redirect to dashboard page.
-                                return redirect()->route('dashboard');
+                                return Redirect::to('https://' . $request->shop . '/admin/apps/seo_suite/dashboard');
                             }
                         } else {
                             Log::info('Problem during saving shop details into the db');
-                            Log::info($storeDetails);
+                            Log::info($shopDetails);
                             dd('Problem during installation. please check logs.');
                         }
                     } else throw new Exception('Invalid Access Token ' . $accessToken);

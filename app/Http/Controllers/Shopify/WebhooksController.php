@@ -6,14 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ConfigureWebhooks;
 use App\Jobs\DeleteWebhooks;
 use App\Services\ShopifyService;
-use App\Traits\FunctionTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class WebhooksController extends Controller
 {
-    use FunctionTrait;
 
     /**
      * 
@@ -31,10 +29,10 @@ class WebhooksController extends Controller
     /**
      * 
      */
-    public function configureWebhooks($id)
+    public function configureWebhooks($shop)
     {
         try {
-            ConfigureWebhooks::dispatchNow($id);
+            ConfigureWebhooks::dispatchNow($shop);
             print_r('Done');
         } catch (Exception $e) {
             Log::info($e->getMessage() . ' ' . $e->getLine());
@@ -44,10 +42,10 @@ class WebhooksController extends Controller
     /**
      * 
      */
-    public function deleteWebhooks($id)
+    public function deleteWebhooks($shop)
     {
         try {
-            DeleteWebhooks::dispatch($id);
+            DeleteWebhooks::dispatch($shop);
             print_r('Done');
         } catch (Exception $e) {
             Log::info($e->getMessage() . ' ' . $e->getLine());

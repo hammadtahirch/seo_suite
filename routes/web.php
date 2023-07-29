@@ -32,6 +32,7 @@ Route::prefix('webhook')->group(function () {
     Route::any('shop/updated', [WebhooksController::class, 'shopUpdated']);
 });
 Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 //Testing scripts
-Route::get('configure/webhooks/{id}', [WebhooksController::class, 'configureWebhooks']);
-Route::get('delete/webhooks/{id}', [WebhooksController::class, 'deleteWebhooks']);
+Route::get('configure/webhooks/{shop}', [WebhooksController::class, 'configureWebhooks']);
+Route::get('delete/webhooks/{shop}', [WebhooksController::class, 'deleteWebhooks']);

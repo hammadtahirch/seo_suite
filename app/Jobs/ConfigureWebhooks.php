@@ -2,8 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Models\Store;
+use App\Models\Shop;
 use App\Services\ShopifyService;
+use App\Services\ShopService;
 use App\Traits\FunctionTrait;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -22,14 +23,9 @@ class ConfigureWebhooks implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * custom traits
-     */
-    use FunctionTrait;
-
-    /**
      * 
      */
-    private $store_id;
+    private $shop;
 
     /**
      * 
@@ -37,14 +33,20 @@ class ConfigureWebhooks implements ShouldQueue
     private $shopifyService;
 
     /**
+     * 
+     */
+    private $shopService;
+
+    /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($store_id)
+    public function __construct($shop)
     {
-        $this->store_id = $store_id;
+        $this->shop = $shop;
         $this->shopifyService = app(ShopifyService::class);
+        $this->shopService = app(ShopService::class);
     }
 
     /**
@@ -55,10 +57,11 @@ class ConfigureWebhooks implements ShouldQueue
     public function handle()
     {
         try {
-            $store = Store::where('table_id', $this->store_id)->first();
-            $endpoint = getShopifyURLForStore('webhooks.json', $store);
-            $headers = getShopifyHeadersForStore($store);
-            $webhooks_config = config('custom.webhook_events');
+            $shopObject = $this->shopService->getShopByDomain($this->shop);
+
+            $endpoint = getShopifyURLForShop('webhooks.json', $shopObject);
+            $headers = getShopifyHeadersForShop($shopObject);
+            $webhooks_config = config('shopify.webhook_events');
             foreach ($webhooks_config as $topic => $url) {
                 $body = [
                     'webhook' => [

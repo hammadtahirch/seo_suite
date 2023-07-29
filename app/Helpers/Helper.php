@@ -3,40 +3,40 @@
 /**
  * 
  */
-function getShopifyURLForStore($endpoint, $store)
+function getShopifyURLForShop($endpoint, $shop)
 {
-    return checkIfStoreIsPrivate($store) ?
-        'https://' . $store['api_key'] . ':' . $store['api_secret_key'] . '@' . $store['myshopify_domain'] . '/admin/api/' . config('shopify.shopify_api_version') . '/' . $endpoint
+    return checkIfShopIsPrivate($shop) ?
+        'https://' . $shop['api_key'] . ':' . $shop['api_secret_key'] . '@' . $shop['myshopify_domain'] . '/admin/api/' . config('shopify.shopify_api_version') . '/' . $endpoint
         :
-        'https://' . $store['myshopify_domain'] . '/admin/api/' . config('shopify.shopify_api_version') . '/' . $endpoint;
+        'https://' . $shop['myshopify_domain'] . '/admin/api/' . config('shopify.shopify_api_version') . '/' . $endpoint;
 }
 
 /**
  * 
  */
-function getShopifyHeadersForStore($store, $method = 'GET')
+function getShopifyHeadersForShop($shop, $method = 'GET')
 {
     return $method == 'GET' ? [
         'Content-Type' => 'application/json',
-        'X-Shopify-Access-Token' => $store['access_token']
+        'X-Shopify-Access-Token' => $shop['access_token']
     ] : [
         'Content-Type: application/json',
-        'X-Shopify-Access-Token: ' . $store['access_token']
+        'X-Shopify-Access-Token: ' . $shop['access_token']
     ];
 }
 
 /**
  * 
  */
-function getGraphQLHeadersForStore($store)
+function getGraphQLHeadersForShop($shop)
 {
-    return checkIfStoreIsPrivate($store) ? [
+    return checkIfShopIsPrivate($shop) ? [
         'Content-Type' => 'application/json',
-        'X-Shopify-Access-Token' => $store['api_secret_key'],
+        'X-Shopify-Access-Token' => $shop['api_secret_key'],
         'X-GraphQL-Cost-Include-Fields' => true
     ] : [
         'Content-Type' => 'application/json',
-        'X-Shopify-Access-Token' => $store['access_token'],
+        'X-Shopify-Access-Token' => $shop['access_token'],
         'X-GraphQL-Cost-Include-Fields' => true
     ];
 }
@@ -44,11 +44,11 @@ function getGraphQLHeadersForStore($store)
 /**
  * 
  */
-function checkIfStoreIsPrivate($store)
+function checkIfShopIsPrivate($shop)
 {
-    return isset($store['api_key']) && isset($store['api_secret_key'])
-        && $store['api_key'] !== null && $store['api_secret_key'] !== null
-        && strlen($store['api_key']) > 0 && strlen($store['api_secret_key']) > 0;
+    return isset($shop['api_key']) && isset($shop['api_secret_key'])
+        && $shop['api_key'] !== null && $shop['api_secret_key'] !== null
+        && strlen($shop['api_key']) > 0 && strlen($shop['api_secret_key']) > 0;
 }
 
 /**

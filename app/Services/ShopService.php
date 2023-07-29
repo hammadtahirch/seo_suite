@@ -2,16 +2,16 @@
 
 namespace App\Services;
 
-use App\Models\Store;
+use App\Models\Shop;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
-class StoreService
+class ShopService
 {
     /**
      * 
      */
-    public function saveStoreDetailsToDatabase($shopDetails, $accessToken)
+    public function saveShopDetailsToDatabase($shopDetails, $accessToken)
     {
         try {
             $payload = [
@@ -25,8 +25,8 @@ class StoreService
                 'address2' => $shopDetails['address2'],
                 'zip' => $shopDetails['zip']
             ];
-            $store_db = Store::updateOrCreate(['myshopify_domain' => $shopDetails['myshopify_domain']], $payload);
-            return $store_db;
+            $shopObject = Shop::updateOrCreate(['myshopify_domain' => $shopDetails['myshopify_domain']], $payload);
+            return $shopObject;
         } catch (Exception $e) {
             Log::info($e->getMessage() . ' ' . $e->getLine());
             return false;
@@ -36,8 +36,8 @@ class StoreService
     /**
      * 
      */
-    public function getStoreByDomain($shop)
+    public function getShopByDomain($shop)
     {
-        return Store::where('myshopify_domain', $shop)->first();
+        return Shop::where('myshopify_domain', $shop)->first();
     }
 }

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Jenssegers\Mongodb\Eloquent\Model;
 
-class Store extends Model
+class Shop extends Model
 {
     /**
      * db connection
@@ -14,7 +14,7 @@ class Store extends Model
     /**
      * db collection
      */
-    protected $collection = 'stores';
+    protected $collection = 'shops';
 
     /**
      * 
